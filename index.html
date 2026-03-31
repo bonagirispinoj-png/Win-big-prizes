@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NeuroCoin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --card: #1a1a24;
+  --border: #2a2a3a;
+  --accent: #7c5cfc;
+  --accent2: #00e5a0;
+  --accent3: #ff6b6b;
+  --gold: #ffd166;
+  --text: #f0f0f8;
+  --muted: #888899;
+  --r: 14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,.brand{font-family:'Syne',sans-serif}
+
+/* NAV */
+#topbar{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#bal-display{font-size:.85rem;color:var(--accent2);font-weight:600}
+#logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.8rem;transition:.2s}
+#logout-btn:hover{border-color:var(--accent3);color:var(--accent3)}
+
+/* PAGES */
+.page{display:none;padding:20px;max-width:480px;margin:0 auto;animation:fadeUp .35s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* FORM */
+input,select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px 14px;font-size:.95rem;font-family:'DM Sans',sans-serif;outline:none;transition:.2s;margin-bottom:12px}
+input:focus,select:focus{border-color:var(--accent)}
+input::placeholder{color:var(--muted)}
+label{font-size:.82rem;color:var(--muted);display:block;margin-bottom:4px}
+
+/* BUTTONS */
+.btn{width:100%;padding:13px;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:.2s;letter-spacing:.3px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#5a3de8);color:#fff}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,92,252,.35)}
+.btn-success{background:linear-gradient(135deg,var(--accent2),#00b87a);color:#000}
+.btn-danger{background:linear-gradient(135deg,var(--accent3),#e04040);color:#fff}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{width:auto;padding:7px 16px;font-size:.82rem;border-radius:8px}
+
+/* BOTTOM NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(13,13,20,0.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 14px;cursor:pointer;transition:.2s;gap:3px;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.68rem}
+.nav-item svg{width:22px;height:22px;stroke-width:1.8}
+.nav-item.active{color:var(--accent)}
+.nav-item.active svg{stroke:var(--accent)}
+
+/* HERO BALANCE */
+.balance-hero{text-align:center;padding:28px 0 10px}
+.balance-hero .label{font-size:.78rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.balance-hero .amount{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.balance-hero .sub{font-size:.8rem;color:var(--muted);margin-top:6px}
+
+/* STATUS BADGE */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-green{background:rgba(0,229,160,.12);color:var(--accent2);border:1px solid rgba(0,229,160,.25)}
+.badge-yellow{background:rgba(255,209,102,.12);color:var(--gold);border:1px solid rgba(255,209,102,.25)}
+.badge-red{background:rgba(255,107,107,.12);color:var(--accent3);border:1px solid rgba(255,107,107,.25)}
+.badge-purple{background:rgba(124,92,252,.12);color:var(--accent);border:1px solid rgba(124,92,252,.25)}
+
+/* ALERT */
+.alert{padding:12px 14px;border-radius:10px;font-size:.85rem;margin-bottom:12px}
+.alert-info{background:rgba(124,92,252,.12);border:1px solid rgba(124,92,252,.3);color:#c4b0ff}
+.alert-success{background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.3);color:var(--accent2)}
+.alert-error{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:var(--accent3)}
+
+/* REFERRAL BOX */
+.ref-box{background:var(--surface);border:1px dashed var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+.ref-code{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--accent);letter-spacing:2px;word-break:break-all}
+.copy-btn{background:var(--accent);border:none;color:#fff;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:.78rem;font-weight:600;white-space:nowrap}
+
+/* PROGRESS */
+.prog-wrap{background:var(--surface);border-radius:99px;height:8px;overflow:hidden;margin:8px 0}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s ease}
+
+/* LIST */
+.list-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.list-row:last-child{border-bottom:none}
+.list-label{color:var(--muted);font-size:.8rem}
+
+/* TABS */
+.tabs{display:flex;background:var(--surface);border-radius:10px;padding:3px;margin-bottom:16px;gap:3px}
+.tab{flex:1;padding:8px;border:none;background:none;border-radius:8px;color:var(--muted);cursor:pointer;font-size:.85rem;font-family:'Syne',sans-serif;font-weight:600;transition:.2s}
+.tab.active{background:var(--card);color:var(--text)}
+
+/* TOAST */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 22px;border-radius:30px;font-size:.85rem;opacity:0;pointer-events:none;transition:.3s;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* AUTH */
+#auth-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;background:radial-gradient(ellipse at 30% 20%,rgba(124,92,252,.12) 0%,transparent 60%)}
+.auth-logo{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;text-align:center}
+.auth-sub{color:var(--muted);font-size:.85rem;text-align:center;margin-bottom:32px}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;width:100%;max-width:380px}
+
+/* LOCKED OVERLAY */
+.locked-msg{text-align:center;padding:30px 20px}
+.locked-msg .lock-icon{font-size:3rem;margin-bottom:12px}
+.locked-msg p{color:var(--muted);font-size:.9rem;line-height:1.6}
+
+/* WALK FREE BADGE */
+.free-walk-banner{background:linear-gradient(135deg,rgba(0,229,160,.1),rgba(124,92,252,.1));border:1px solid rgba(0,229,160,.2);border-radius:var(--r);padding:16px 20px;text-align:center;margin-bottom:16px}
+.free-walk-banner h3{font-family:'Syne',sans-serif;font-size:1.1rem;color:var(--accent2);margin-bottom:4px}
+.free-walk-banner p{color:var(--muted);font-size:.83rem}
+
+/* PRIZE */
+.prize-row{display:flex;align-items:center;gap:14px;padding:14px;background:var(--surface);border-radius:10px;margin-bottom:10px}
+.prize-rank{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;min-width:36px}
+.prize-amount{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+.prize-label{font-size:.75rem;color:var(--muted)}
+
+/* ADMIN */
+.admin-user-card{background:var(--surface);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid var(--border)}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+/* LOADER */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SPACER for bottom nav */
+.page-spacer{height:80px}
+</style>
+</head>
+<body>
+
+<!-- ==================== AUTH PAGE ==================== -->
+<div id="auth-page" style="display:none">
+  <div class="auth-logo">🧠 NeuroCoin</div>
+  <div class="auth-sub">Walk free. Refer. Earn. Withdraw.</div>
+  <div class="auth-box">
+    <div class="tabs" style="margin-bottom:20px">
+      <button class="tab active" onclick="switchAuth('login')">Login</button>
+      <button class="tab" onclick="switchAuth('signup')">Sign Up</button>
+    </div>
+    <div id="auth-login">
+      <label>Email</label>
+      <input id="login-email" type="email" placeholder="you@email.com"/>
+      <label>Password</label>
+      <input id="login-pass" type="password" placeholder="••••••••"/>
+      <div id="login-err" class="alert alert-error" style="display:none"></div>
+      <button class="btn btn-primary" onclick="doLogin()">Login</button>
+    </div>
+    <div id="auth-signup" style="display:none">
+      <label>Email</label>
+      <input id="su-email" type="email" placeholder="you@email.com"/>
+      <label>Password</label>
+      <input id="su-pass" type="password" placeholder="Min 6 characters"/>
+      <label>Referral Code (optional)</label>
+      <input id="su-ref" type="text" placeholder="Enter referral code"/>
+      <div id="su-err" class="alert alert-error" style="display:none"></div>
+      <button class="btn btn-primary" onclick="doSignup()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MAIN APP ==================== -->
+<div id="app" style="display:none">
+  <!-- Top Bar -->
+  <div id="topbar">
+    <div class="brand">🧠 NeuroCoin</div>
+    <div id="bal-display">₹0.00</div>
+    <button id="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
+
+  <!-- HOME PAGE -->
+  <div class="page active" id="page-home">
+    <div class="balance-hero">
+      <div class="label">Your Balance</div>
+      <div class="amount" id="home-balance">₹0.00</div>
+      <div class="sub" id="home-status">Loading...</div>
+    </div>
+
+    <!-- Free Walk Banner -->
+    <div class="free-walk-banner">
+      <h3>🚶 Walk & Stay Healthy — It's Free!</h3>
+      <p>GPS walking is completely free. No earnings per km, just enjoy walking!</p>
+    </div>
+
+    <!-- Unlock Status -->
+    <div class="card" id="unlock-card">
+      <div class="card-title">🔐 Account Status</div>
+      <div id="unlock-content">Loading...</div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="card">
+      <div class="card-title">📊 Your Stats</div>
+      <div class="list-row">
+        <span class="list-label">Total Referrals</span>
+        <span id="stat-refs">0</span>
+      </div>
+      <div class="list-row">
+        <span class="list-label">Total Earned</span>
+        <span id="stat-earned">₹0</span>
+      </div>
+      <div class="list-row">
+        <span class="list-label">Withdrawals</span>
+        <span id="stat-withdrawals">0</span>
+      </div>
+    </div>
+
+    <div class="page-spacer"></div>
+  </div>
+
+  <!-- UNLOCK PAGE -->
+  <div class="page" id="page-unlock">
+    <div class="card">
+      <div class="card-title">💳 Unlock Your Account</div>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;line-height:1.6">
+        Pay via UPI and submit your UTR number. Admin will verify and unlock your account. Once unlocked, you can use referrals and withdrawals.
+      </p>
+      <div class="alert alert-info">
+        <strong>UPI ID:</strong> bonagirispinoj-1@oksbi<br/>
+        <strong>Amount:</strong> As instructed by admin
+      </div>
+      <div id="unlock-form-area">
+        <label>Your UTR Number</label>
+        <input id="utr-input" type="text" placeholder="12-digit UTR number"/>
+        <div id="utr-err" class="alert alert-error" style="display:none"></div>
+        <div id="utr-success" class="alert alert-success" style="display:none"></div>
+        <button class="btn btn-primary" onclick="submitUTR()">Submit UTR</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">ℹ️ How It Works</div>
+      <div class="list-row"><span>1️⃣</span><span style="color:var(--muted);font-size:.85rem">Pay via UPI to the ID above</span></div>
+      <div class="list-row"><span>2️⃣</span><span style="color:var(--muted);font-size:.85rem">Copy your UTR from payment app</span></div>
+      <div class="list-row"><span>3️⃣</span><span style="color:var(--muted);font-size:.85rem">Submit UTR here — admin notified via WhatsApp</span></div>
+      <div class="list-row"><span>4️⃣</span><span style="color:var(--muted);font-size:.85rem">Admin approves → account unlocked</span></div>
+    </div>
+    <div class="page-spacer"></div>
+  </div>
+
+  <!-- REFERRAL PAGE -->
+  <div class="page" id="page-referral">
+    <div id="ref-locked" class="locked-msg" style="display:none">
+      <div class="lock-icon">🔒</div>
+      <h3 style="font-family:'Syne',sans-serif;margin-bottom:10px">Referral Locked</h3>
+      <p>Your referral link unlocks after your balance reaches <strong style="color:var(--gold)">₹2,000</strong>.</p>
+      <br/>
+      <div class="prog-wrap" style="max-width:260px;margin:0 auto">
+        <div class="prog-fill" id="ref-prog-fill" style="width:0%"></div>
+      </div>
+      <p style="margin-top:8px;font-size:.8rem" id="ref-prog-text">₹0 / ₹2,000</p>
+    </div>
+
+    <div id="ref-unlocked" style="display:none">
+      <div class="card">
+        <div class="card-title">🎁 Your Referral</div>
+        <label style="margin-bottom:6px;display:block">Referral Code</label>
+        <div class="ref-box">
+          <div class="ref-code" id="my-ref-code">—</div>
+          <button class="copy-btn" onclick="copyCode()">Copy</button>
+        </div>
+        <label style="margin-bottom:6px;display:block">Referral Link</label>
+        <div class="ref-box">
+          <div class="ref-code" id="my-ref-link" style="font-size:.75rem;letter-spacing:0">—</div>
+          <button class="copy-btn" onclick="copyLink()">Copy</button>
+        </div>
+        <div class="alert alert-success" style="margin-top:8px">
+          🎉 You earn <strong>₹500</strong> for every friend who gets their account unlocked using your referral code!
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📈 Referral Stats</div>
+        <div class="list-row">
+          <span class="list-label">Total Referrals</span>
+          <span id="ref-count">0</span>
+        </div>
+        <div class="list-row">
+          <span class="list-label">Earned from Referrals</span>
+          <span id="ref-earned">₹0</span>
+        </div>
+      </div>
+    </div>
+    <div class="page-spacer"></div>
+  </div>
+
+  <!-- WITHDRAW PAGE -->
+  <div class="page" id="page-withdraw">
+    <div id="wd-locked" class="locked-msg" style="display:none">
+      <div class="lock-icon">🔒</div>
+      <h3 style="font-family:'Syne',sans-serif;margin-bottom:10px">Account Not Unlocked</h3>
+      <p>Unlock your account first to access withdrawals.</p>
+    </div>
+
+    <div id="wd-unlocked" style="display:none">
+      <div class="card">
+        <div class="card-title">💸 Withdraw Funds</div>
+        <div class="list-row">
+          <span class="list-label">Available Balance</span>
+          <span id="wd-balance" style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent2)">₹0</span>
+        </div>
+        <div class="list-row">
+          <span class="list-label">Daily Limit</span>
+          <span style="color:var(--muted)">₹5,000/day</span>
+        </div>
+        <br/>
+        <div id="wd-pending-msg" class="alert alert-info" style="display:none">⏳ You have a pending withdrawal request. Wait for admin to process it.</div>
+        <div id="wd-form">
+          <label>Amount (₹)</label>
+          <input id="wd-amount" type="number" placeholder="Enter amount"/>
+          <label>UPI ID / Bank Details</label>
+          <input id="wd-upi" type="text" placeholder="your@upi or bank account"/>
+          <div id="wd-err" class="alert alert-error" style="display:none"></div>
+          <div id="wd-success" class="alert alert-success" style="display:none"></div>
+          <button class="btn btn-success" onclick="submitWithdraw()">Request Withdrawal</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Withdrawal History</div>
+        <div id="wd-history">Loading...</div>
+      </div>
+    </div>
+    <div class="page-spacer"></div>
+  </div>
+
+  <!-- PRIZES PAGE -->
+  <div class="page" id="page-prizes">
+    <div class="card">
+      <div class="card-title">🏆 Prize Pool</div>
+      <p style="color:var(--muted);font-size:.83rem;margin-bottom:16px">Top prizes for highest earners. Rankings visible to admin only.</p>
+      <div class="prize-row">
+        <div class="prize-rank">🥇</div>
+        <div>
+          <div class="prize-amount" style="color:var(--gold)">₹1 Crore</div>
+          <div class="prize-label">1st Place</div>
+        </div>
+      </div>
+      <div class="prize-row">
+        <div class="prize-rank">🥈</div>
+        <div>
+          <div class="prize-amount" style="color:#c0c0c0">₹75 Lakhs</div>
+          <div class="prize-label">2nd Place</div>
+        </div>
+      </div>
+      <div class="prize-row">
+        <div class="prize-rank">🥉</div>
+        <div>
+          <div class="prize-amount" style="color:#cd7f32">₹50 Lakhs</div>
+          <div class="prize-label">3rd Place</div>
+        </div>
+      </div>
+      <div class="alert alert-info" style="margin-top:12px">Rankings are determined by admin. Keep earning to win!</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🚶 Free Walking</div>
+      <p style="color:var(--muted);font-size:.85rem;line-height:1.6">Walking with GPS is completely <strong style="color:var(--accent2)">free</strong> on NeuroCoin. Stay healthy, track your steps, and enjoy the outdoors — no earning per km, but your health is the real prize!</p>
+    </div>
+    <div class="page-spacer"></div>
+  </div>
+
+  <!-- ADMIN PAGE -->
+  <div class="page" id="page-admin">
+    <div class="tabs">
+      <button class="tab active" onclick="adminTab('users')">Users</button>
+      <button class="tab" onclick="adminTab('utrs')">UTRs</button>
+      <button class="tab" onclick="adminTab('withdrawals')">Withdrawals</button>
+    </div>
+
+    <!-- Users tab -->
+    <div id="atab-users">
+      <div class="card">
+        <div class="card-title">👥 All Users</div>
+        <div id="admin-users-list">Loading...</div>
+      </div>
+    </div>
+
+    <!-- UTRs tab -->
+    <div id="atab-utrs" style="display:none">
+      <div class="card">
+        <div class="card-title">📋 Pending UTR Submissions</div>
+        <div id="admin-utrs-list">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Withdrawals tab -->
+    <div id="atab-withdrawals" style="display:none">
+      <div class="card">
+        <div class="card-title">💸 Pending Withdrawals</div>
+        <div id="admin-wd-list">Loading...</div>
+      </div>
+    </div>
+
+    <div class="page-spacer"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div id="bottom-nav">
+    <button class="nav-item active" onclick="showPage('home')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Home
+    </button>
+    <button class="nav-item" onclick="showPage('unlock')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+      Unlock
+    </button>
+    <button class="nav-item" onclick="showPage('referral')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Refer
+    </button>
+    <button class="nav-item" onclick="showPage('withdraw')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Withdraw
+    </button>
+    <button class="nav-item" onclick="showPage('prizes')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+      Prizes
+    </button>
+    <button class="nav-item" id="admin-nav-btn" onclick="showPage('admin')" style="display:none">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Admin
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ==================== FIREBASE + APP JS ==================== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, addDoc, serverTimestamp, increment, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const ADMIN_EMAIL = "bonagirispinoj@gmail.com";
+const WHATSAPP_NUMBER = "919999999999"; // update if needed
+const REFERRAL_UNLOCK_THRESHOLD = 2000;
+const REFERRAL_BONUS = 500;
+const WITHDRAW_DAILY_LIMIT = 5000;
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBIebPXVjzVBZl380ZCELg2LUSCLr-6QrE",
+  authDomain: "neurocoin-ntc.firebaseapp.com",
+  databaseURL: "https://neurocoin-ntc-default-rtdb.firebaseio.com",
+  projectId: "neurocoin-ntc",
+  storageBucket: "neurocoin-ntc.firebasestorage.app",
+  messagingSenderId: "1040732555800",
+  appId: "1:1040732555800:web:55e63b5ff81781c6b1916d",
+  measurementId: "G-6X8T0YQTQ3"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let userData = null;
+
+// ---- UTILS ----
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+function genCode(uid) {
+  return "NC" + uid.slice(-6).toUpperCase();
+}
+function fmt(n) {
+  return "₹" + Number(n||0).toFixed(2);
+}
+
+// ---- AUTH ----
+window.switchAuth = (m) => {
+  document.getElementById('auth-login').style.display = m==='login'?'block':'none';
+  document.getElementById('auth-signup').style.display = m==='signup'?'block':'none';
+  document.querySelectorAll('#auth-page .tab').forEach((t,i) => t.classList.toggle('active', (m==='login'&&i===0)||(m==='signup'&&i===1)));
+};
+
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+  err.style.display='none';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    err.textContent = e.message; err.style.display='block';
+  }
+};
+
+window.doSignup = async () => {
+  const email = document.getElementById('su-email').value.trim();
+  const pass = document.getElementById('su-pass').value;
+  const refCode = document.getElementById('su-ref').value.trim().toUpperCase();
+  const err = document.getElementById('su-err');
+  err.style.display='none';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid = cred.user.uid;
+    const myCode = genCode(uid);
+    let referredBy = null;
+
+    // Validate referral code
+    if (refCode) {
+      const rq = query(collection(db,'users'), where('referralCode','==',refCode));
+      const rsnap = await getDocs(rq);
+      if (!rsnap.empty) {
+        referredBy = rsnap.docs[0].id;
+      }
+    }
+
+    await setDoc(doc(db,'users',uid), {
+      email, uid,
+      balance: 0,
+      referralCode: myCode,
+      referredBy,
+      referralCount: 0,
+      referralEarned: 0,
+      isUnlocked: false,
+      utrSubmitted: false,
+      utrCode: null,
+      withdrawalCount: 0,
+      createdAt: serverTimestamp()
+    });
+  } catch(e) {
+    err.textContent = e.message; err.style.display='block';
+  }
+};
+
+window.doLogout = async () => {
+  await signOut(auth);
+};
+
+// ---- AUTH STATE ----
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    await loadUser();
+    document.getElementById('auth-page').style.display='none';
+    document.getElementById('app').style.display='block';
+    if (user.email === ADMIN_EMAIL) {
+      document.getElementById('admin-nav-btn').style.display='flex';
+    }
+    renderHome();
+    renderReferral();
+    renderWithdraw();
+  } else {
+    currentUser = null; userData = null;
+    document.getElementById('auth-page').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
+});
+
+async function loadUser() {
+  const snap = await getDoc(doc(db,'users',currentUser.uid));
+  userData = snap.data();
+}
+
+// ---- PAGES ----
+window.showPage = (p) => {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const pages = ['home','unlock','referral','withdraw','prizes','admin'];
+  const idx = pages.indexOf(p);
+  const navItems = document.querySelectorAll('.nav-item');
+  if (navItems[idx]) navItems[idx].classList.add('active');
+  if (p==='home') renderHome();
+  if (p==='referral') renderReferral();
+  if (p==='withdraw') renderWithdraw();
+  if (p==='admin' && currentUser?.email===ADMIN_EMAIL) renderAdmin();
+};
+
+// ---- HOME ----
+async function renderHome() {
+  if (!userData) return;
+  await loadUser();
+  document.getElementById('home-balance').textContent = fmt(userData.balance);
+  document.getElementById('bal-display').textContent = fmt(userData.balance);
+  document.getElementById('stat-refs').textContent = userData.referralCount || 0;
+  document.getElementById('stat-earned').textContent = fmt(userData.referralEarned);
+
+  // Withdrawal count
+  const wq = query(collection(db,'withdrawals'), where('uid','==',currentUser.uid));
+  const wsnap = await getDocs(wq);
+  document.getElementById('stat-withdrawals').textContent = wsnap.size;
+
+  // Status
+  const statusEl = document.getElementById('home-status');
+  const unlockCard = document.getElementById('unlock-content');
+  if (userData.isUnlocked) {
+    statusEl.innerHTML = '<span class="badge badge-green">✅ Unlocked</span>';
+    unlockCard.innerHTML = '<div class="alert alert-success">🎉 Your account is fully unlocked! You can use referrals and withdrawals.</div>';
+  } else if (userData.utrSubmitted) {
+    statusEl.innerHTML = '<span class="badge badge-yellow">⏳ Pending Approval</span>';
+    unlockCard.innerHTML = '<div class="alert alert-info">⏳ Your UTR <strong>'+userData.utrCode+'</strong> has been submitted. Waiting for admin approval.</div>';
+  } else {
+    statusEl.innerHTML = '<span class="badge badge-red">🔒 Locked</span>';
+    unlockCard.innerHTML = '<div class="alert alert-error">Account not unlocked. Go to <strong>Unlock</strong> tab to submit your UTR.</div><button class="btn btn-primary" style="margin-top:12px" onclick="showPage(\'unlock\')">Unlock Now →</button>';
+  }
+}
+
+// ---- UTR SUBMIT ----
+window.submitUTR = async () => {
+  if (!userData) return;
+  if (userData.isUnlocked) { toast('Already unlocked!'); return; }
+  if (userData.utrSubmitted) { toast('UTR already submitted. Wait for admin approval.'); return; }
+  const utr = document.getElementById('utr-input').value.trim();
+  const err = document.getElementById('utr-err');
+  const succ = document.getElementById('utr-success');
+  err.style.display='none'; succ.style.display='none';
+  if (!utr || utr.length < 8) { err.textContent='Enter a valid UTR number.'; err.style.display='block'; return; }
+
+  // Check duplicate UTR
+  const dq = query(collection(db,'utrs'), where('utr','==',utr));
+  const dsnap = await getDocs(dq);
+  if (!dsnap.empty) { err.textContent='This UTR has already been submitted.'; err.style.display='block'; return; }
+
+  await addDoc(collection(db,'utrs'), {
+    uid: currentUser.uid,
+    email: currentUser.email,
+    utr,
+    status: 'pending',
+    createdAt: serverTimestamp()
+  });
+  await updateDoc(doc(db,'users',currentUser.uid), { utrSubmitted:true, utrCode: utr });
+  userData.utrSubmitted = true;
+  userData.utrCode = utr;
+
+  // WhatsApp auto-send
+  const msg = encodeURIComponent(`NeuroCoin UTR Submission\nEmail: ${currentUser.email}\nUTR: ${utr}`);
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`,'_blank');
+
+  succ.textContent = '✅ UTR submitted! WhatsApp opened for admin notification. Wait for approval.';
+  succ.style.display='block';
+  document.getElementById('utr-input').value='';
+};
+
+// ---- REFERRAL ----
+async function renderReferral() {
+  if (!userData) return;
+  await loadUser();
+  const bal = userData.balance || 0;
+  const locked = bal < REFERRAL_UNLOCK_THRESHOLD;
+  document.getElementById('ref-locked').style.display = locked ? 'block':'none';
+  document.getElementById('ref-unlocked').style.display = locked ? 'none':'block';
+
+  if (locked) {
+    const pct = Math.min(100, (bal/REFERRAL_UNLOCK_THRESHOLD)*100);
+    document.getElementById('ref-prog-fill').style.width = pct+'%';
+    document.getElementById('ref-prog-text').textContent = fmt(bal)+' / '+fmt(REFERRAL_UNLOCK_THRESHOLD);
+  } else {
+    const code = userData.referralCode;
+    const link = window.location.href.split('?')[0] + '?ref='+code;
+    document.getElementById('my-ref-code').textContent = code;
+    document.getElementById('my-ref-link').textContent = link;
+    document.getElementById('ref-count').textContent = userData.referralCount||0;
+    document.getElementById('ref-earned').textContent = fmt(userData.referralEarned);
+  }
+}
+
+window.copyCode = () => {
+  navigator.clipboard.writeText(document.getElementById('my-ref-code').textContent);
+  toast('Referral code copied!');
+};
+window.copyLink = () => {
+  navigator.clipboard.writeText(document.getElementById('my-ref-link').textContent);
+  toast('Referral link copied!');
+};
+
+// ---- WITHDRAW ----
+async function renderWithdraw() {
+  if (!userData) return;
+  await loadUser();
+  if (!userData.isUnlocked) {
+    document.getElementById('wd-locked').style.display='block';
+    document.getElementById('wd-unlocked').style.display='none';
+    return;
+  }
+  document.getElementById('wd-locked').style.display='none';
+  document.getElementById('wd-unlocked').style.display='block';
+  document.getElementById('wd-balance').textContent = fmt(userData.balance);
+
+  // Check pending
+  const pq = query(collection(db,'withdrawals'), where('uid','==',currentUser.uid), where('status','==','pending'));
+  const psnap = await getDocs(pq);
+  const hasPending = !psnap.empty;
+  document.getElementById('wd-pending-msg').style.display = hasPending?'block':'none';
+  document.getElementById('wd-form').style.display = hasPending?'none':'block';
+
+  // History
+  const hq = query(collection(db,'withdrawals'), where('uid','==',currentUser.uid), orderBy('createdAt','desc'));
+  const hsnap = await getDocs(hq);
+  const histEl = document.getElementById('wd-history');
+  if (hsnap.empty) { histEl.innerHTML='<p style="color:var(--muted);font-size:.85rem">No withdrawal history.</p>'; return; }
+  histEl.innerHTML = hsnap.docs.map(d => {
+    const w = d.data();
+    const badge = w.status==='approved'?'badge-green':w.status==='rejected'?'badge-red':'badge-yellow';
+    return `<div class="list-row"><div><div style="font-weight:600">${fmt(w.amount)}</div><div class="list-label">${w.upi}</div></div><span class="badge ${badge}">${w.status}</span></div>`;
+  }).join('');
+}
+
+window.submitWithdraw = async () => {
+  if (!userData) return;
+  const amt = parseFloat(document.getElementById('wd-amount').value);
+  const upi = document.getElementById('wd-upi').value.trim();
+  const err = document.getElementById('wd-err');
+  const succ = document.getElementById('wd-success');
+  err.style.display='none'; succ.style.display='none';
+  if (!amt || amt<=0) { err.textContent='Enter a valid amount.'; err.style.display='block'; return; }
+  if (amt > WITHDRAW_DAILY_LIMIT) { err.textContent='Exceeds ₹5,000/day limit.'; err.style.display='block'; return; }
+  if (amt > userData.balance) { err.textContent='Insufficient balance.'; err.style.display='block'; return; }
+  if (!upi) { err.textContent='Enter your UPI / bank details.'; err.style.display='block'; return; }
+
+  // Safe deduction
+  await updateDoc(doc(db,'users',currentUser.uid), { balance: increment(-amt) });
+  await addDoc(collection(db,'withdrawals'), {
+    uid: currentUser.uid,
+    email: currentUser.email,
+    amount: amt,
+    upi,
+    status: 'pending',
+    createdAt: serverTimestamp()
+  });
+  userData.balance -= amt;
+  succ.textContent='✅ Withdrawal request submitted! Admin will process it soon.';
+  succ.style.display='block';
+  document.getElementById('wd-amount').value='';
+  document.getElementById('wd-upi').value='';
+  await renderWithdraw();
+};
+
+// ---- ADMIN ----
+window.adminTab = (tab) => {
+  ['users','utrs','withdrawals'].forEach(t => {
+    document.getElementById('atab-'+t).style.display = t===tab?'block':'none';
+  });
+  document.querySelectorAll('#page-admin .tab').forEach((el,i) => {
+    el.classList.toggle('active', ['users','utrs','withdrawals'][i]===tab);
+  });
+  if (tab==='users') loadAdminUsers();
+  if (tab==='utrs') loadAdminUTRs();
+  if (tab==='withdrawals') loadAdminWD();
+};
+
+async function renderAdmin() {
+  loadAdminUsers();
+}
+
+async function loadAdminUsers() {
+  const q = query(collection(db,'users'), orderBy('balance','desc'));
+  const snap = await getDocs(q);
+  const el = document.getElementById('admin-users-list');
+  if (snap.empty) { el.innerHTML='<p style="color:var(--muted)">No users yet.</p>'; return; }
+  el.innerHTML = snap.docs.map(d => {
+    const u = d.data();
+    const badge = u.isUnlocked?'badge-green':u.utrSubmitted?'badge-yellow':'badge-red';
+    const status = u.isUnlocked?'Unlocked':u.utrSubmitted?'Pending':'Locked';
+    return `<div class="admin-user-card">
+      <div style="font-weight:600;font-size:.88rem">${u.email}</div>
+      <div style="font-size:.78rem;color:var(--muted);margin:4px 0">${u.uid}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0">
+        <span>💰 ${fmt(u.balance)}</span>
+        <span>👥 Refs: ${u.referralCount||0}</span>
+        <span class="badge ${badge}">${status}</span>
+      </div>
+      <div class="admin-actions">
+        ${!u.isUnlocked && u.utrSubmitted ? `<button class="btn btn-success btn-sm" onclick="adminApproveUTR('${d.id}')">✅ Approve Unlock</button>` : ''}
+        <button class="btn btn-outline btn-sm" onclick="adminAddMoney('${d.id}')">💰 Add ₹</button>
+        <button class="btn btn-outline btn-sm" onclick="adminResetCap('${d.id}')">🔄 Reset Cap</button>
+        <button class="btn btn-danger btn-sm" onclick="adminDeleteUser('${d.id}')">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadAdminUTRs() {
+  const q = query(collection(db,'utrs'), where('status','==','pending'));
+  const snap = await getDocs(q);
+  const el = document.getElementById('admin-utrs-list');
+  if (snap.empty) { el.innerHTML='<p style="color:var(--muted)">No pending UTRs.</p>'; return; }
+  el.innerHTML = snap.docs.map(d => {
+    const u = d.data();
+    return `<div class="admin-user-card">
+      <div style="font-weight:600">${u.email}</div>
+      <div style="color:var(--accent);font-family:'Syne',sans-serif;font-size:1.05rem;margin:6px 0">UTR: ${u.utr}</div>
+      <div class="admin-actions">
+        <button class="btn btn-success btn-sm" onclick="adminApproveUTRDoc('${d.id}','${u.uid}')">✅ Approve</button>
+        <button class="btn btn-danger btn-sm" onclick="adminRejectUTRDoc('${d.id}','${u.uid}')">❌ Reject</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadAdminWD() {
+  const q = query(collection(db,'withdrawals'), where('status','==','pending'));
+  const snap = await getDocs(q);
+  const el = document.getElementById('admin-wd-list');
+  if (snap.empty) { el.innerHTML='<p style="color:var(--muted)">No pending withdrawals.</p>'; return; }
+  el.innerHTML = snap.docs.map(d => {
+    const w = d.data();
+    return `<div class="admin-user-card">
+      <div style="font-weight:600">${w.email}</div>
+      <div style="color:var(--accent2);font-family:'Syne',sans-serif;font-size:1.1rem;margin:6px 0">${fmt(w.amount)}</div>
+      <div style="font-size:.8rem;color:var(--muted)">${w.upi}</div>
+      <div class="admin-actions">
+        <button class="btn btn-success btn-sm" onclick="adminApproveWD('${d.id}','${w.uid}',${w.amount})">✅ Approve</button>
+        <button class="btn btn-danger btn-sm" onclick="adminRejectWD('${d.id}','${w.uid}',${w.amount})">❌ Reject (Refund)</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.adminApproveUTR = async (uid) => {
+  await updateDoc(doc(db,'users',uid), { isUnlocked:true });
+  // Give referral bonus to referrer
+  const usnap = await getDoc(doc(db,'users',uid));
+  const udata = usnap.data();
+  if (udata.referredBy) {
+    // Check if bonus already given (bonus duplication protection)
+    const bq = query(collection(db,'bonuses'), where('toUid','==',udata.referredBy), where('fromUid','==',uid));
+    const bsnap = await getDocs(bq);
+    if (bsnap.empty) {
+      await updateDoc(doc(db,'users',udata.referredBy), {
+        balance: increment(REFERRAL_BONUS),
+        referralCount: increment(1),
+        referralEarned: increment(REFERRAL_BONUS)
+      });
+      await addDoc(collection(db,'bonuses'), { toUid: udata.referredBy, fromUid: uid, amount: REFERRAL_BONUS, createdAt: serverTimestamp() });
+    }
+  }
+  toast('User unlocked!'); loadAdminUsers();
+};
+
+window.adminApproveUTRDoc = async (docId, uid) => {
+  await updateDoc(doc(db,'utrs',docId), { status:'approved' });
+  await adminApproveUTR(uid);
+  loadAdminUTRs();
+};
+
+window.adminRejectUTRDoc = async (docId, uid) => {
+  await updateDoc(doc(db,'utrs',docId), { status:'rejected' });
+  await updateDoc(doc(db,'users',uid), { utrSubmitted:false, utrCode:null });
+  toast('UTR rejected.'); loadAdminUTRs();
+};
+
+window.adminApproveWD = async (docId, uid, amount) => {
+  await updateDoc(doc(db,'withdrawals',docId), { status:'approved' });
+  toast('Withdrawal approved!'); loadAdminWD();
+};
+
+window.adminRejectWD = async (docId, uid, amount) => {
+  await updateDoc(doc(db,'withdrawals',docId), { status:'rejected' });
+  // Refund balance
+  await updateDoc(doc(db,'users',uid), { balance: increment(amount) });
+  toast('Withdrawal rejected & refunded.'); loadAdminWD();
+};
+
+window.adminAddMoney = async (uid) => {
+  const amt = parseFloat(prompt('Enter amount to add (₹):'));
+  if (!amt || isNaN(amt) || amt<=0) return;
+  await updateDoc(doc(db,'users',uid), { balance: increment(amt) });
+  toast(fmt(amt)+' added!'); loadAdminUsers();
+};
+
+window.adminResetCap = async (uid) => {
+  if (!confirm('Reset referral cap for this user?')) return;
+  await updateDoc(doc(db,'users',uid), { referralCount:0 });
+  toast('Cap reset.'); loadAdminUsers();
+};
+
+window.adminDeleteUser = async (uid) => {
+  if (!confirm('Delete this user? This cannot be undone.')) return;
+  await deleteDoc(doc(db,'users',uid));
+  toast('User deleted.'); loadAdminUsers();
+};
+
+// ---- REFERRAL CODE FROM URL ----
+const urlRef = new URLSearchParams(window.location.search).get('ref');
+if (urlRef) document.getElementById('su-ref').value = urlRef;
+</script>
+</body>
+</html>
